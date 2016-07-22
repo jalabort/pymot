@@ -3,6 +3,7 @@ __pycache__
 .coverage
 cover/*
 *.pyd
+*.pyc
 *.swp
 *.so
 *.exe
