@@ -1,1 +1,13 @@
-*.pyc
+*~
+__pycache__
+.coverage
+cover/*
+*.pyd
+*.swp
+*.so
+*.exe
+*.DS_Store
+build/*
+pymot.egg-info/*
+.idea/*
+.ipynb_checkpoints
