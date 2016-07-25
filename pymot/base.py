@@ -1,15 +1,8 @@
-#!/usr/bin/env python3
-
-import argparse
-import json
 import logging
 import sys
 
 from munkres import Munkres
 
-from pymot.formatchecker import FormatChecker
-from pymot.importers import MOT_groundtruth_import
-from pymot.importers import MOT_hypo_import
 from pymot.boundingbox import BoundingBox
 from pymot.utilities import write_stderr_red
 
@@ -564,57 +557,3 @@ class MOTEvaluation:
 
         self.groundtruth_ids_ = set()
         self.hypothesis_ids_ = set()
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--groundtruth', required=True)
-    parser.add_argument('-b', '--hypothesis', required=True)
-    parser.add_argument('-c', '--check_format', action="store_true", default=True)
-    parser.add_argument('-v', '--visual_debug_file')
-    args = parser.parse_args()
-
-    # Load ground truth according to format
-    # Assume MOT format, if non-json
-    gt = open(args.groundtruth) # gt file
-    if args.groundtruth.endswith(".json"):
-        groundtruth = json.load(gt)[0]
-    else:
-        groundtruth = MOT_groundtruth_import(gt.readlines())
-    gt.close()
-
-    # Load MOT format files
-    hypo = open(args.hypothesis) # hypo file
-    if args.hypothesis.endswith(".json"):
-        hypotheses = json.load(hypo)[0]
-    else:
-        hypotheses = MOT_hypo_import(hypo.readlines())
-    hypo.close()
-
-
-    evaluator = MOTEvaluation(groundtruth, hypotheses)
-
-    if(args.check_format):
-        formatChecker = FormatChecker(groundtruth, hypotheses)
-        success = formatChecker.check_existing_ids()
-        success |= formatChecker.check_ambiguous_ids()
-        success |= formatChecker.check_completeness()
-
-        if not success:
-            write_stderr_red("Error:", "Stopping. Fix ids first. Evaluating with broken data does not make sense!\n    File: %s" % args.groundtruth)
-            sys.exit()
-
-    evaluator.evaluate()
-    print("Track statistics")
-    evaluator.printTrackStatistics()
-    print("Results")
-    evaluator.printResults()
-#    evaluator.printLegacyFormat()
-
-#    print json.dumps(evaluator.getAbsoluteStatistics(), indent=4, sort_keys=True)
-#    print json.dumps(evaluator.getRelativeStatistics(), indent=4, sort_keys=True)
-
-    if(args.visual_debug_file):
-        with open(args.visual_debug_file, 'w') as fp:
-            json.dump(evaluator.getVisualDebug(), fp, indent=4)
