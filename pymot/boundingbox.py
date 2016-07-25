@@ -6,19 +6,17 @@ class BoundingBox:
     Bounding box class that is used for both hypothesis and ground truth
     objects.
 
-    Parameters
-    ----------
-    x : `float`
+    :param x : `float`
         The image horizontal coordinate of the top left vertex of the
         bounding box.
-    y : `float`
+    :param y : `float`
         The image vertical coordinate of the top left vertex of the
         bounding box.
-    width : `float`
+    :param width : `float`
         The horizontal size of the bounding box
-    height : `float`
+    :param height : `float`
         The vertical size of the bounding box.
-    id : `str` or `int`, optional
+    :param id : `str` or `int`, optional
         The id of the object that the bounding box represents.
     """
     def __init__(self, x, y, width, height, id=''):
@@ -35,19 +33,16 @@ class BoundingBox:
         r"""
         Create a bounding box from a dictionary.
 
-        Parameters
-        ----------
-        bb_dic : `dict`
+       :param bb_dic : `dict`
             A dictionary representing a bounding box. Must have the following
             format:
-                ``{'x': `float`,
-                   'y': `float`,
-                   'width': `float`,
-                   'height': `float`,
-                   'id': `str` or `int`}``
-        Returns
-        -------
-        bb : :map:`BoundingBox`
+            ``{'x': `float`,
+            'y': `float`,
+            'width': `float`,
+            'height': `float`,
+            'id': `str` or `int`}``
+
+       :return: bb : :map:`BoundingBox`
             A new bounding box.
         """
         if 'id' in bb_dic:
@@ -62,9 +57,7 @@ class BoundingBox:
         r"""
         Compute and return the area of the bounding box.
 
-        Returns
-        -------
-        area : `float`
+       :return: area : `float`
             Area of the bounding box.
         """
         return self.width * self.height
@@ -74,14 +67,10 @@ class BoundingBox:
         Compute and return a bounding box object that is the intersection
         between self and another bounding box.
 
-        Parameters
-        ----------
-        bb : `:map:`BoundingBox``
+        :param bb : `:map:`BoundingBox``
             Another bounding box object.
 
-        Returns
-        -------
-        intersection : `:map:`BoundingBox``
+        :return: intersection : `:map:`BoundingBox``
             A new bounding box object representing the intersection between
             self and bb.
         """
@@ -100,14 +89,10 @@ class BoundingBox:
         Compute and return the intersection over union (IoU) between self and
         another bounding box.
 
-        Parameters
-        ----------
-        bb : `:map:`BoundingBox``
+        :param bb : `:map:`BoundingBox``
             Another bounding box object.
 
-        Returns
-        -------
-        iou : `float`
+        :return: iou : `float`
             IoU between self and bb.
         """
         intersection = self.intersect(bb).area()
