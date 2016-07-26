@@ -1,6 +1,7 @@
 from nose.tools import raises
 import warnings
-from pymot import BoundingBox
+
+from pymot.boundingbox import BoundingBox
 
 
 def test_bb_constructor_int_id():
