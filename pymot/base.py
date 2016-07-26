@@ -99,33 +99,49 @@ class MotEvaluation:
     @property
     def annotations(self):
         r"""
-        The total number of ground truth annotated targets.
+        The ground truth tracking annotations.
 
-        :type: `int`
+        :type: `dict`
         """
         return self._annotations
 
     @property
     def hypotheses(self):
         r"""
+        The tracking hypotheses.
+
+        :type: `dict`
         """
         return self._hypotheses
 
     @property
     def overlap_threshold(self):
         r"""
+        The necessary bounding box overlap between hypotheses and
+        annotations for them to be considered correspondences.
+
+        :type: `float`
         """
         return self._overlap_threshold
 
     @property
     def sync_delta(self):
         r"""
+        The temporal resolution threshold below which hypotheses and
+        annotation frames are considered to be chronologically close and
+        can be safely matched.
+
+        :type: `float`
         """
         return self._sync_delta
 
     @property
     def evaluated(self):
         r"""
+        Flag indicating whether the method `self.evaluate()` has been called
+        or not and, hence, indicating if the evaluation has been carried out.
+
+        :type: `bool`
         """
         return self._evaluated
 
