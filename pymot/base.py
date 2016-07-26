@@ -1,14 +1,8 @@
-import logging
-import sys
 import warnings
-
+import json
 import numpy as np
 from munkres import Munkres
-
 from pymot.boundingbox import BoundingBox
-from pymot.utilities import write_stderr_red
-
-LOG = logging.getLogger(__name__)
 
 
 class MotEvaluation:
@@ -230,6 +224,14 @@ class MotEvaluation:
         """
         return len(self._h_map.keys())
 
+    @property
+    def visual_debug(self):
+        r"""
+        """
+        return {'filename': self._annotations['filename'],
+                'class': self._annotations['class'],
+                'frames': self._visual_debug_frames}
+
     def mota(self):
         r"""
         Get the Multi Object Tracking Accuracy (MOTP) metric.
@@ -318,46 +320,69 @@ class MotEvaluation:
                 correspondences[a_id] = h[0]['id']
                 self._total_overlap += overlap
 
+
         # Step 2
         # Find remaining correspondences using the Hungarian algorithm
+
+        # Build distance matrix and fill all of its entries with a not quite
+        # infinite number
         distance_matrix = np.empty((len(hypotheses), len(annotations)))
         distance_matrix.fill(self._munkres_inf)
 
+        # Fill out the previous distance matrix with true overlaps between
+        # annotations and hypothesis. Note that possible valid correspondences
+        # found in step one will be ignored (this is because temporal
+        # coherence precedes bounding box overlap in this case).
+        # For all annotations
         for i, a in enumerate(annotations):
-
+            # If the annotations has not being assigned to a hypothesis yet
             if a['id'] not in correspondences.keys():
+                # Iterate over all hypotheses
                 for j, h in enumerate(hypotheses):
-
+                    # If the hypothesis has not being assigned to an
+                    # annotation yet.
                     if h['id'] not in correspondences.values():
+                        # Compute their overlap
                         a_bb = BoundingBox.init_from_dic(a)
                         h_bb = BoundingBox.init_from_dic(h)
                         overlap = a_bb.iou(h_bb)
-
+                        # If overlap is bigger or equal than the threshold
                         if overlap >= self._overlap_threshold:
+                            # Assign the overlap inverse as the distance
+                            # between this annotation-hypothesis pair
                             distance_matrix[i][j] = 1.0 / overlap
 
+        # Make sure distance matrix is filled out
         if distance_matrix.shape[0] > 0 and distance_matrix.shape[1] > 0:
+            # Run Hungarian algorithm. Returns a list of tuples containing
+            # optimally (based on distance) paired annotations and hypothesis
             indices = Munkres().compute(distance_matrix.tolist())
         else:
             indices = []
 
+        # For every pair of optimally associated annotations and hypothesis
         for (a_index, h_index) in indices:
             distance = distance_matrix[a_index][h_index]
 
-            if distance != self._munkres_inf:
+            if distance < self._munkres_inf:
                 a_id = annotations[a_index]['id']
                 h_id = hypotheses[h_index]['id']
 
+                # Check if the annotation's id was already associated with a
+                # previous hypothesis
                 if a_id in self._mappings:
+                    # If it was, then its id must be different from the id
+                    # of the current hypothesis since that should have been
+                    # handled in Step 1
                     assert self._mappings[a_id] != h_id
 
+                # Save this new annotation-hypothesis correspondence
                 correspondences[a_id] = h_id
+                # Add its overlap
                 self._total_overlap += 1.0 / distance
 
-                if a_id in self._a_map and self._a_map[a_id] != h_id:
-                    self._recoverable_mismatches += 1
-
-                # Update yin-yang maps
+                # Update independent annotations and hypotheses mapping
+                # dictionaries
                 self._a_map[a_id] = h_id
                 self._h_map[h_id] = a_id
 
@@ -366,73 +391,82 @@ class MotEvaluation:
                 # Correspondence: A-1
                 # Mapping: A-2, B-1
                 # We have to detect both forms of conflicts
-                for a_id, h_id in self._mappings.items():
 
-                    a_mapping_a_id = [a for a in annotations
-                                      if a['id'] == a_id]
+                # TODO(jalabort): Couldn't this be made more efficient by simply querying the dictionary with a_id and h_id?
+                # Iterate over all current annotation-hypothesis mappings
+                for mapping_a_id, mapping_h_id in list(self._mappings.items()):
 
-                    if len (a_mapping_a_id) == 1:
-                        LOG.info("Ground truths %s and %s are DCO. Not considering for mismatch." % (a_id, a_id))
-    #                    print "DIFF DCO %s" % (gt_id), groundtruths[gt_index]
+                    # If the previous optimal annotation-hypothesis pair
+                    # given by the Hungarian algorithm contradicts a current
+                    # annotation-hypothesis mapping
+                    if ((mapping_a_id == a_id and mapping_h_id != h_id) or
+                            (mapping_a_id != a_id and mapping_h_id == h_id)):
 
-                    else:
-                    # Look ma, we got a conflict over here!
-                    # New hypothesis for mapped ground truth found
-                        if ((a_id == a_id and h_id != h_id) or
-                            (a_id != a_id and h_id == h_id)):
+                        # Increment the identity switch counter
+                        self._identity_switches += 1
 
-                            self._identity_switches += 1
+                        # Get annotation and hypothesis with given ids
+                        a = annotations[a_index]
+                        h = hypotheses[h_index]
 
-                            # find groundtruth and hypothesis with given ids
-                            a = [g for g in annotations if g['id'] == a_id]
-                            h = [h for h in hypotheses if h['id'] == h_id]
+                        # Mark them as mismatches
+                        a['class'] = 'identity_switch'
+                        h['class'] = 'identity_switch'
 
-                            assert len(a) == 1
-                            assert len(h) == 1
+                        # TODO(jalabort): Is this useful?
+                        # Add them to the visual debug annotation list
+                        visual_debug_annotations.append(a)
+                        visual_debug_annotations.append(h)
 
-                            a = a[0]
-                            h = h[0]
+                        # Delete current annotation-hypothesis mappings
+                        del self._mappings[mapping_a_id]
 
-                            a['class'] = 'mismatch'
-                            h['class'] = 'mismatch'
+                # Save (overwrite) new annotation-hypothesis mappings
+                self._mappings[a_id] = h_id
 
-                            visual_debug_annotations.append(a)
-                            visual_debug_annotations.append(h)
 
-                            # mapping will be updated after loop
-                            del self._mappings[a_id]
+        # Step 3
+        # Count false negatives and false positive
 
-                # Save (overwrite) mapping even if ground truth is dco
-                self._mappings[a_id] = h_id # Update mapping
-
-        # Visual debug
+        # For all annotations
         for a in annotations:
-            if a['class'] != 'mismatch' and a['id'] in correspondences.keys():
+            # If the annotation was not mark as identity switch and its id is
+            # in correspondence
+            if (a['class'] != 'identity_switch' and
+                        a['id'] in correspondences.keys()):
+                # Mark it as correspondence
                 a['class'] = 'correspondence'
+                # Add the annotation to the visual debug annotation list
                 visual_debug_annotations.append(a)
 
+            # If the annotation id is not in correspondences
+            if a['id'] not in correspondences.keys():
+                # Increment the false negative counter and mark it as a
+                # false negative
+                a['class'] = 'false_negative'
+                self._false_negatives += 1
+                visual_debug_annotations.append(a)
+
+        # For all hypotheses
         for h in hypotheses:
-            if h['class'] != 'mismatch' and h['id'] in correspondences.values():
+            # If the hypothesis was not mark as identity switch and its id is
+            # in correspondence
+            if (h['class'] != 'identity_switch' and
+                        h['id'] in correspondences.values()):
+                # Mark it as correspondence
                 h['class'] = 'correspondence'
                 visual_debug_annotations.append(h)
 
-        # PAPER STEP 4
-        # Count miss, when groundtruth has no correspondence and is not dco
-        for a in annotations:
-            if a['id'] not in correspondences.keys():
-                a['class'] = 'miss'
-                visual_debug_annotations.append(a)
-                self._false_negatives += 1
-
-        # Count false positives
-        for h in hypotheses:
+            # If the hypothesis id is not in correspondences
             if h['id'] not in correspondences.values():
+                # Increment the false positive counter and mark it as a
+                # false negative
                 self._false_positives += 1
-                visual_debug_annotations.append(h)
                 h['class'] = "false positive"
+                visual_debug_annotations.append(h)
+
 
         self._total_correspondences += len(correspondences)
-
         self._total_annotations += len(annotations)
 
         visual_debug_frame = {'timestamp': timestamp,
@@ -474,13 +508,6 @@ class MotEvaluation:
             return {"hypotheses": []}
 
         return hypotheses_frames[0]
-
-    def get_visual_debug(self):
-        r"""
-        """
-        return {'filename': self._annotations['filename'],
-                'class': self._annotations['class'],
-                'frames': self._visual_debug_frames}
 
     def absolute_statistics(self):
         r"""
@@ -525,6 +552,15 @@ class MotEvaluation:
         print('Correspondences:           %d' % self._total_correspondences)
         print('MOTA:                      %.2f' % self.mota())
         print('MOTP:                      %.2f' % self.motp())
+
+    def print_annotations(self):
+        print(json.dumps(self.annotations, sort_keys=True, indent=2))
+
+    def print_hypotheses(self):
+        print(json.dumps(self.hypotheses, sort_keys=True, indent=2))
+
+    def print_visual_debug(self):
+        print(json.dumps(self.visual_debug, sort_keys=True, indent=2))
 
 
 def calculate_mota(false_negatives, false_positives, identity_switches,
