@@ -47,40 +47,33 @@ class MotEvaluation:
         self._sync_delta = sync_delta
         self._munkres_inf = munkres_inf
 
+        # Set initial state
         self._reset_mapping()
         self._reset_statistics()
+        self._reset_annotations()
+        self._visual_debug_frames = []
         self._evaluated = False
 
-        for f in self._annotations['frames']:
-            for a in f['annotations']:
-                a['type'] = 'annotations'
-                a['class'] = 'unevaluated'
-
-        for f in self._hypotheses['frames']:
-            for h in f['hypotheses']:
-                h['type'] = 'hypothesis'
-                h['class'] = 'unevaluated'
-            
-        self._visual_debug_frames = []
 
     def reset(self):
         r"""
+        Reset the state of the `:map:MotEvaluation` object. Current evaluation
+        data will be deleted and the object's state will match its initial
+        state after construction.
         """
         self._reset_mapping()
         self._reset_statistics()
+        self._reset_annotations()
+        self._visual_debug_frames = []
         self._evaluated = False
 
     def _reset_mapping(self):
-        r"""
-        """
         self._mappings = {}
 
         self._a_map = {}
         self._h_map = {}
 
     def _reset_statistics(self):
-        r"""
-        """
         self._false_negatives = 0
         self._false_positives = 0
         self._identity_switches = 0
@@ -92,9 +85,23 @@ class MotEvaluation:
         self._annotations_ids = set()
         self._hypotheses_ids = set()
 
+    def _reset_annotations(self):
+        for f in self._annotations['frames']:
+            for a in f['annotations']:
+                a['type'] = 'annotations'
+                a['class'] = 'unevaluated'
+
+        for f in self._hypotheses['frames']:
+            for h in f['hypotheses']:
+                h['type'] = 'hypothesis'
+                h['class'] = 'unevaluated'
+
     @property
     def annotations(self):
         r"""
+        The total number of ground truth annotated targets.
+
+        :type: `int`
         """
         return self._annotations
 
@@ -124,53 +131,84 @@ class MotEvaluation:
 
     @property
     def total_annotations(self):
+        r"""
+        The total number of ground truth annotated targets.
+
+        :type: `int`
+        """
         return self._total_annotations
 
     @property
     def false_negatives(self):
         r"""
+        The total number of false negatives (misses).
+
+        :type: `int`
         """
         return self._false_negatives
 
     @property
     def false_positives(self):
         r"""
+        The total number of false positives.
+
+        :type: `int`
         """
         return self._false_positives
 
     @property
     def identity_switches(self):
         r"""
+        The total number of identity switches (mismatches).
+
+        :type: `int`
         """
         return self._identity_switches
 
     @property
     def correspondences(self):
         r"""
+        The total number of valid correspondences between ground
+        truth tracking annotations and tracking hypotheses.
+
+        :type: `int`
         """
         return self._total_correspondences
 
     @property
     def overlap(self):
         r"""
+        The total sum of the IoU between the bounding boxes of all valid
+        annotation-hypothesis correspondences.
+
+        :type: `float`
         """
         return self._total_overlap
 
     @property
     def false_negative_rate(self):
         r"""
+        The false negative (misses) rate.
+
+        :type: `int`
         """
         return float(self._false_negatives) / self._total_annotations
 
     @property
     def false_positive_rate(self):
         r"""
+        The false positive rate.
+
+        :type: `int`
         """
         return float(self._false_positives) / self._total_annotations
 
     @property
     def identity_switch_rate(self):
         r"""
+        The identity switch (mismatch) rate.
+
+        :type: `int`
         """
         return float(self._identity_switches) / self._total_annotations
 
