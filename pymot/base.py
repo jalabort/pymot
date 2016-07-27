@@ -368,7 +368,7 @@ class MotEvaluation:
             h_bb = BoundingBox.init_from_dic(h[0])
 
             # TODO(jalabort): Should overlap to be computed using a function handle provided at construction time?
-            overlap = a_bb.iou(h_bb)
+            overlap = a_bb.intersection_over_union(h_bb)
 
             if overlap >= self._overlap_threshold:
                 correspondences[a_id] = h[0]['id']
@@ -399,7 +399,7 @@ class MotEvaluation:
                         # Compute their overlap
                         a_bb = BoundingBox.init_from_dic(a)
                         h_bb = BoundingBox.init_from_dic(h)
-                        overlap = a_bb.iou(h_bb)
+                        overlap = a_bb.intersection_over_union(h_bb)
                         # If overlap is bigger or equal than the threshold
                         if overlap >= self._overlap_threshold:
                             # Assign the overlap inverse as the distance

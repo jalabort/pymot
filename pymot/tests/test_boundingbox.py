@@ -6,29 +6,29 @@ from pymot.boundingbox import BoundingBox
 
 def test_bb_constructor_int_id():
     bb = BoundingBox(3, 5, 10, 15, 7)
-    assert bb.x == 3
-    assert bb.y == 5
-    assert bb.width == 10
-    assert bb.height == 15
-    assert bb.id == '7'
+    assert bb._x == 3
+    assert bb._y == 5
+    assert bb._width == 10
+    assert bb._height == 15
+    assert bb._id == '7'
 
 
 def test_bb_constructor_string_id():
     bb = BoundingBox(3, 5, 10, 15, 'referee')
-    assert bb.x == 3
-    assert bb.y == 5
-    assert bb.width == 10
-    assert bb.height == 15
-    assert bb.id == 'referee'
+    assert bb._x == 3
+    assert bb._y == 5
+    assert bb._width == 10
+    assert bb._height == 15
+    assert bb._id == 'referee'
 
 
 def test_bb_constructor_default_id():
     bb = BoundingBox(3, 5, 10, 15)
-    assert bb.x == 3
-    assert bb.y == 5
-    assert bb.width == 10
-    assert bb.height == 15
-    assert bb.id == ''
+    assert bb._x == 3
+    assert bb._y == 5
+    assert bb._width == 10
+    assert bb._height == 15
+    assert bb._id == ''
 
 
 @raises(ValueError)
@@ -133,31 +133,31 @@ def test_bb_all_intersect():
     bb1 = BoundingBox(3, 5, 10, 15)
     bb2 = BoundingBox(3, 5, 10, 15)
     intersect = bb1.intersect(bb2)
-    assert intersect.x == bb1.x == bb2.x
-    assert intersect.y == bb1.y == bb2.y
-    assert intersect.width == bb1.width == bb2.width
-    assert intersect.height == bb1.height == bb2.height
+    assert intersect.x == bb1._x == bb2._x
+    assert intersect.y == bb1._y == bb2._y
+    assert intersect.width == bb1._width == bb2._width
+    assert intersect.height == bb1._height == bb2._height
     assert intersect.id == 'intersect'
 
 
 def test_bb_no_iou():
     bb1 = BoundingBox(3, 5, 10, 15)
     bb2 = BoundingBox(1, 2, 1, 1)
-    iou = bb1.iou(bb2)
+    iou = bb1.intersection_over_union(bb2)
     assert iou == 0
 
 
 def test_bb_some_iou():
     bb1 = BoundingBox(3, 5, 10, 15)
     bb2 = BoundingBox(1, 2, 4, 15)
-    iou = bb1.iou(bb2)
+    iou = bb1.intersection_over_union(bb2)
     assert iou == 4 / 31
 
 
 def test_bb_half_iou():
     bb1 = BoundingBox(3, 5, 10, 15)
     bb2 = BoundingBox(8, 5, 10, 15)
-    iou = bb1.iou(bb2)
+    iou = bb1.intersection_over_union(bb2)
     print(iou)
     assert iou == 1 / 3
 
@@ -165,5 +165,5 @@ def test_bb_half_iou():
 def test_bb_all_iou():
     bb1 = BoundingBox(3, 5, 10, 15)
     bb2 = BoundingBox(3, 5, 10, 15)
-    iou = bb1.iou(bb2)
+    iou = bb1.intersection_over_union(bb2)
     assert iou == 1
