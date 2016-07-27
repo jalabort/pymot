@@ -5,6 +5,7 @@ from munkres import Munkres
 from pymot.boundingbox import BoundingBox
 
 
+# TODO(jalabort): Can we have this class work for both intersection over union and center distance effectively?
 class MotEvaluation:
     r"""
     Class used to evaluate the performance of Multi-Object Tracking (MOT)
