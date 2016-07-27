@@ -266,4 +266,4 @@ def center_distance(bb1, bb2):
     center_distance : `float`
         Euclidean distance between the centers of the bounding boxes.
     """
-    return np.sqrt((bb1.center - bb2.center) ** 2)
+    return np.sqrt(np.sum((bb1.center - bb2.center) ** 2))
