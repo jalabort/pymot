@@ -10,7 +10,7 @@ hypotheses_file = '../data/hypotheses.json'
 a = open(annotations_file)
 
 if annotations_file.endswith('.json'):
-    annotations = json.load(a)[0]
+    annotations = json.load(a)
 else:
     raise Exception('Only json is supported!')
 
@@ -21,7 +21,7 @@ a.close()
 h = open(hypotheses_file)
 
 if hypotheses_file.endswith('.json'):
-    hypotheses = json.load(h)[0]
+    hypotheses = json.load(h)
 else:
     raise Exception('Only json is supported!')
 

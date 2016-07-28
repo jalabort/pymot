@@ -329,9 +329,18 @@ class MotEvaluation:
             Dictionary representing the ground truth tracking annotations
             of the new frame.
         """
-        timestamp = frame['timestamp']
         annotations = frame['annotations']
-        hypotheses = self._hypotheses_frame(timestamp)['hypotheses']
+
+        # Find the hypotheses frame that chronologically matches the
+        # annotation frame. Frame number is give priority over timestamp.
+        if 'num' in frame:
+            num =  frame['num']
+            hypotheses_frame = self._hypotheses_frame_from_num(num)
+        else:
+            timestamp = frame['timestamp']
+            hypotheses_frame = self._hypotheses_frame_from_timestamp(timestamp)
+
+        hypotheses = hypotheses_frame['hypotheses']
 
         visual_debug_annotations = []
 
@@ -524,15 +533,46 @@ class MotEvaluation:
         self._total_correspondences += len(correspondences)
         self._total_annotations += len(annotations)
 
-        visual_debug_frame = {'timestamp': timestamp,
-                              'class': frame['class'],
+        visual_debug_frame = {'class': frame['class'],
                               'annotations': visual_debug_annotations}
         if 'num' in frame:
             visual_debug_frame['num'] = frame['num']
 
+        if 'timestamp' in frame:
+            visual_debug_frame['timestamp'] = frame['timestamp']
+
         self._visual_debug_frames.append(visual_debug_frame)
 
-    def _hypotheses_frame(self, timestamp):
+    def _hypotheses_frame_from_num(self, num):
+        r"""
+        Obtain a hypothesis occurring at a particular frame number.
+
+        Parameters
+        ----------
+        num: `int` or `float`
+            The frame number to be matched.
+
+        Returns
+        -------
+        hypotheses: `dict`
+            A matching hypothesis for the given frame number.
+        """
+        # TODO(jalabort): Is this slow?
+        hypotheses_frames = [h for h in self._hypotheses['frames'] if
+                             h['num'] == num]
+
+        if len(hypotheses_frames) > 1:
+            raise Exception(
+                '> 1 hypotheses found for frame number %d' % num)
+
+        if len(hypotheses_frames) == 0:
+            warnings.warn(
+                'No hypothesis found for frame number %d' % num)
+            return {"hypotheses": []}
+
+        return hypotheses_frames[0]
+
+    def _hypotheses_frame_from_timestamp(self, timestamp):
         r"""
         Obtain a hypothesis occurring chronologically close to the given
         timestamp with, at most, `self.sync_delta` time difference.
@@ -553,13 +593,13 @@ class MotEvaluation:
 
         if len(hypotheses_frames) > 1:
             raise Exception(
-                "> 1 hypotheses timestamps found for timestamp %f with sync "
-                "delta %f" % (timestamp, self._sync_delta))
+                '> 1 hypotheses found for timestamp %f with sync delta %f'
+                % (timestamp, self._sync_delta))
 
         if len(hypotheses_frames) == 0:
             warnings.warn(
-                'No hypothesis timestamp found for timestamp %f with sync '
-                'delta %f' % (timestamp, self._sync_delta))
+                'No hypothesis found for timestamp %f with sync delta %f' %
+                (timestamp, self._sync_delta))
             return {"hypotheses": []}
 
         return hypotheses_frames[0]
