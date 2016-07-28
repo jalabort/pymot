@@ -3,6 +3,7 @@ import json
 import numpy as np
 from munkres import Munkres
 from pymot.boundingbox import BoundingBox
+from pymot.utils import progress_bar
 
 
 # TODO(jalabort): Can we have this class work for both intersection over union and center distance effectively?
@@ -314,8 +315,7 @@ class MotEvaluation:
         r"""
         Compute Multi-Object Tracking (MOT) performance metrics.
         """
-        frames = self._annotations['frames']
-        for frame in frames:
+        for frame in progress_bar(self._annotations['frames']):
             self._evaluate_frame(frame)
         self._evaluated = True
 
@@ -390,7 +390,7 @@ class MotEvaluation:
 
         # Build distance matrix and fill all of its entries with a not quite
         # infinite number
-        distance_matrix = np.empty((len(hypotheses), len(annotations)))
+        distance_matrix = np.empty((len(annotations), len(hypotheses)))
         distance_matrix.fill(self._munkres_inf)
 
         # Fill out the previous distance matrix with true overlaps between
@@ -420,6 +420,7 @@ class MotEvaluation:
         if distance_matrix.shape[0] > 0 and distance_matrix.shape[1] > 0:
             # Run Hungarian algorithm. Returns a list of tuples containing
             # optimally (based on distance) paired annotations and hypothesis
+            # TODO(jalabort): This is extremely slow!!!!
             indices = Munkres().compute(distance_matrix.tolist())
         else:
             indices = []

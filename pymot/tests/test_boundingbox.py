@@ -184,4 +184,4 @@ def test_bb_center_distance():
     bb2 = BoundingBox(1, 2, 2, 1)
     d = bb1.center_distance(bb2)
     assert_almost_equal(d, 11.6619037897)
-
+    
