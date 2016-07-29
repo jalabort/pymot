@@ -12,3 +12,4 @@ build/*
 pymot.egg-info/*
 .idea/*
 .ipynb_checkpoints
+pymot/external/munkres/*.cpp

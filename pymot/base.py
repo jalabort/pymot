@@ -1,9 +1,9 @@
 import warnings
 import json
 import numpy as np
-from munkres import Munkres
 from pymot.boundingbox import BoundingBox
 from pymot.utils import progress_bar
+from pymot.external import munkres
 
 
 # TODO(jalabort): Can we have this class work for both intersection over union and center distance effectively?
@@ -55,7 +55,6 @@ class MotEvaluation:
         self._reset_annotations()
         self._visual_debug_frames = []
         self._evaluated = False
-
 
     def reset(self):
         r"""
@@ -272,7 +271,7 @@ class MotEvaluation:
     def covered_annotation_tracks(self):
         r"""
         """
-        return self._annotations_ids & set(self._a_map.keys())
+        return len(self._annotations_ids & set(self._a_map.keys()))
 
     @property
     def covered_hypothesis_tracks(self):
@@ -420,13 +419,12 @@ class MotEvaluation:
         if distance_matrix.shape[0] > 0 and distance_matrix.shape[1] > 0:
             # Run Hungarian algorithm. Returns a list of tuples containing
             # optimally (based on distance) paired annotations and hypothesis
-            # TODO(jalabort): This is extremely slow!!!!
-            indices = Munkres().compute(distance_matrix.tolist())
+            a_indices, h_indices = np.nonzero(munkres(distance_matrix))
         else:
-            indices = []
+            a_indices, h_indices = [], []
 
         # For every pair of optimally associated annotations and hypothesis
-        for (a_index, h_index) in indices:
+        for a_index, h_index in zip(a_indices, h_indices):
             distance = distance_matrix[a_index][h_index]
 
             if distance < self._munkres_inf:
