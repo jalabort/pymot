@@ -1,45 +1,41 @@
-[
-    {
-        "frames": [
-            {
-                "timestamp": 0.054,
-                "num": 0,
-                "class": "frame",
-                "annotations": [
-                    {
-                        "id": "messi",
-                        "y": 105.0,
-                        "x": 608.0,
-                        "height": 31.0,
-                        "width": 31.0
-                    }
-                ]
-            },
-            {
-                "timestamp": 3.854,
-                "num": 95,
-                "class": "frame",
-                "annotations": [
-                    {
-                        "id": "neymar",
-                        "y": 105.0,
-                        "x": 608.0,
-                        "height": 31.0,
-                        "width": 31.0
-                    },
-                    {
-                        "id": "messi",
-                        "y": 145.0,
-                        "x": 622.0,
-                        "height": 38.0,
-                        "width": 29.0
-                    }
-                ]
-            }
-        ],
-        "class": "video",
-        "filename": "/hudl-video/fc_barcelona.avi"
-    }
-]
-
-
+{
+    "frames": [
+        {
+            "timestamp": 0.054,
+            "num": 0,
+            "class": "frame",
+            "annotations": [
+                {
+                    "id": "messi",
+                    "y": 105.0,
+                    "x": 608.0,
+                    "height": 31.0,
+                    "width": 31.0
+                }
+            ]
+        },
+        {
+            "timestamp": 3.854,
+            "num": 95,
+            "class": "frame",
+            "annotations": [
+                {
+                    "id": "messi",
+                    "y": 105.0,
+                    "x": 608.0,
+                    "height": 31.0,
+                    "width": 31.0
+                },
+                {
+                    "id": "neymar",
+                    "y": 145.0,
+                    "x": 622.0,
+                    "height": 38.0,
+                    "width": 29.0
+                }
+            ]
+        }
+    ],
+    "class": "video",
+    "file_path": "/hudl-video/fc_barcelona.avi"
+}

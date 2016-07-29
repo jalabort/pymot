@@ -98,7 +98,7 @@ def mock_detections(annotations, y_min, y_max, x_min, x_max, noise_factor=0.1,
     return detections
 
 
-def _mock_hypotheses(annotations, y_min, y_max, x_min, x_max, noise_factor=0.5,
+def _mock_hypotheses(annotations, y_min, y_max, x_min, x_max, noise_factor=0.1,
                      false_positive_rate=0.1, false_negative_rate=0.1,
                      identity_switch_rate=0.1):
     r"""
