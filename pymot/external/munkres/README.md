@@ -2,7 +2,7 @@
 
 This code was borrowed from https://github.com/jfrelinger/cython-munkres-wrapper.
 
-There exists several implementations of the `Hungarian` algorithm accessible from Python:
+There exists several implementations of the `Hungarian` algorithm accessible from `Python`:
 
  1. https://github.com/bmc/munkres
  2. http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html
