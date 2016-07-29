@@ -1,9 +1,9 @@
 import warnings
 import json
 import numpy as np
+from munkres import munkres
 from pymot.boundingbox import BoundingBox
 from pymot.utils import progress_bar
-from pymot.external import munkres
 
 
 # TODO(jalabort): Can we have this class work for both intersection over union and center distance effectively?

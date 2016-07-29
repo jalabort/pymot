@@ -1,0 +1,5 @@
+numpy
+cython
+tqdm
+http://github.com/jfrelinger/cython-munkres-wrapper/master#egg=munkres
+scipy
