@@ -1,4 +1,4 @@
-# Python wrapper of C++ implementation of Hungarian algorithm
+# Python wrapper of C++ Hungarian algorithm implementation
 
 This code was borrowed from https://github.com/jfrelinger/cython-munkres-wrapper.
 
