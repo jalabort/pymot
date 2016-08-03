@@ -2,8 +2,4 @@ numpy
 cython
 tqdm
 git+https://github.com/jfrelinger/cython-munkres-wrapper.git#egg=munkres
-scipy
-jupyter
-xmltodict
-gzip
-json
+nose

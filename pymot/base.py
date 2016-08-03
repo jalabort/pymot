@@ -283,7 +283,7 @@ class MotEvaluation:
     def visual_debug(self):
         r"""
         """
-        return {'filename': self._annotations['filename'],
+        return {'filename': self._annotations['file_path'],
                 'class': self._annotations['class'],
                 'frames': self._visual_debug_frames}
 
